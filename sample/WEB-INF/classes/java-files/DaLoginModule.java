@@ -1,0 +1,218 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.login.LoginException;
+import javax.security.auth.spi.LoginModule;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import java.sql.*;
+
+public class DaLoginModule implements LoginModule {
+    
+
+    static Map<Object,ArrayList<DaPrincipal>> auth = new HashMap<>();
+    private CallbackHandler callbackHandler = null;
+    public Subject subject = null;
+    public ArrayList<DaPrincipal> daPrincipal = new ArrayList<>();
+    DaPrincipal dap = null;
+	public userPrincipal user = null;
+    boolean success;
+    String[] tname = {"admin","doctors","patient"};
+    ArrayList<DaPrincipal> roles = new ArrayList<>();
+    String name,pass,otp;
+    totp TOTP = new totp();
+    String jdbcURL = "jdbc:postgresql://localhost:5432/managementDB";
+    String username = "postgres";
+    String password = "1763";
+    Connection conn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    
+
+
+    @Override
+    public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState,
+            Map<String, ?> options) {   
+
+        
+        this.subject = subject;
+        this.callbackHandler = callbackHandler;
+        try {
+            conn = DriverManager.getConnection(jdbcURL, username, password);
+            stmt = conn.createStatement();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public boolean login() throws LoginException {
+        System.out.println(callbackHandler);
+
+        boolean flag = false;
+        Callback[] callbackArray = new Callback[2];
+        callbackArray[0] = new NameCallback("username");
+        callbackArray[1] = new PasswordCallback("password",false);
+        System.out.println(callbackArray.length);
+      
+
+        try {
+            callbackHandler.handle(callbackArray);
+            name = ((NameCallback) callbackArray[0]).getName();
+            pass = new String(((PasswordCallback) callbackArray[1]).getPassword());
+
+
+            System.out.println("Name and password during the j_security_check : "+name + " " + pass + "end");
+
+
+
+            //Checking the data when username is otp and password empty
+            if(!(name.contains("@"))){
+                System.out.println("tname inside otp verification");
+                ArrayList<DaPrincipal> roles = (ArrayList<DaPrincipal>) auth.get(pass);
+                getKey(Authenticate.details.get(pass));
+                //check the otp with google authenticator
+                if(rs.next()){
+                    if(name.equals(TOTP.main(rs.getString(1)))){
+                        for(int i = 0;i<roles.size();i++){
+                            if(roles.get(i).getName().equals(Authenticate.details.get(pass))){
+                                daPrincipal.add(roles.get(i));
+                            }
+                        }
+                        user = new userPrincipal(pass);
+                        roles.clear();
+                        flag = true;
+                        }
+                        else{
+                            DaLoginModule.auth.remove(pass);        
+                            Authenticate.details.remove(pass);
+                        }
+                }
+            }
+
+            //database check for user and password
+            else{
+                try {
+                    // String tn = null;
+            data(tname[0]);
+                while(rs.next()){
+                    if(rs.getString(1).equals(name) && rs.getString(2).equals(pass) ){
+                            dap = new DaPrincipal(tname[0]);
+                            // tn = tname[0];
+                            roles.add(dap);
+                            success = true;
+                            break;
+                    }
+                }
+    
+                data(tname[1]);
+                while(rs.next()){
+                    if(rs.getString(1).equals(name) && rs.getString(2).equals(pass) ){
+                            dap = new DaPrincipal(tname[1]);
+                            roles.add(dap);
+                            // tn = tname[1];
+                            success = true;
+                            break;
+                    }
+                }
+                data(tname[2]);
+                while(rs.next()){
+                    if(rs.getString(1).equals(name) && rs.getString(2).equals(pass) ){
+                            dap = new DaPrincipal(tname[2]);
+                            roles.add(dap);
+                            // tn = tname[2];
+                            success = true;
+                            break;
+                    }
+                }
+                System.out.println( "name in first call " +  name);
+                if(success == true){
+                    System.out.println("entered success ");
+                    auth.put(name,roles);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+
+            
+                    System.out.println("success in Dalogin module " + flag);
+                    return flag;
+
+
+            } catch (Exception e) {
+            System.out.println("Error in login");
+            e.printStackTrace();
+        }
+        
+        return flag;
+    }
+
+    @Override
+    public boolean commit() throws LoginException {
+        boolean flag = false;
+        System.out.println("inside commit method");
+        for(int i=0;i<daPrincipal.size();i++){
+            if(subject !=null && !subject.getPrincipals().contains(daPrincipal.get(i))){
+                    subject.getPrincipals().add(daPrincipal.get(i));
+            }       
+        }
+        subject.getPrincipals().add(user);
+        System.out.println(subject);    
+
+        flag =true;
+        return flag;
+    }
+
+    @Override
+    public boolean abort() throws LoginException {
+        if(subject !=null && !subject.getPrincipals().contains(dap))
+        subject.getPrincipals().remove(dap);
+        subject=null;
+        daPrincipal = null;
+        return true;
+    }
+
+    @Override
+    public boolean logout() throws LoginException {
+        for(int i=0;i<daPrincipal.size();i++){
+                subject.getPrincipals().remove(daPrincipal.get(i));
+        }
+        subject.getPrincipals().remove(user);
+        subject = null;
+        daPrincipal.clear();
+        
+        
+        return true;
+    }
+
+        void data(String tname){
+        try {
+                String query = String.format("select email,password from %s;",tname);
+                rs = stmt.executeQuery(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void getKey(String tname){
+        try {
+                String query = String.format("select authkey from %s where email = '%s';" ,tname , pass);
+                rs = stmt.executeQuery(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void service(HttpServletRequest req,HttpServletResponse res){
+        System.out.println("request parameter : " + req.getParameter("j_username"));
+    }
+}
