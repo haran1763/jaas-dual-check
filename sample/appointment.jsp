@@ -17,5 +17,9 @@
 <input type="submit" value="View Appointment" />
 </form>
 
+<form action="./logout">
+<input type="submit" value="Log Out" />
+</form>
+
 </body>
 </html>

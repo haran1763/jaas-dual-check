@@ -4,7 +4,7 @@
 </head>
 <body>
 
-<form action = "/doctor/delete" method="post">
+<form action = "/sample/delete" method="post">
 <input type="hidden" name="tname" value="hospitals" />
 <label>Enter the name : </label>
 <input type="text" name = "name"/>

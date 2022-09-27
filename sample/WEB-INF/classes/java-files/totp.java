@@ -26,6 +26,7 @@ public class totp {
     //     }
     // }
     public String main(String key) {
+        System.out.println(" Key inside totp = "+key);
         Base32 base32 = new Base32();
         // byte[] bytes = base32.decode("6CKCEQCFW73KMOVC2EBEVWP7X3TDM5GF");
         byte[] bytes = base32.decode(key);

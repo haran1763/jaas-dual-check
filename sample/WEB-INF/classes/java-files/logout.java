@@ -5,9 +5,22 @@ import javax.servlet.http.HttpServletResponse;
 public class logout extends HttpServlet{
     public void service(HttpServletRequest req,HttpServletResponse res){
        try {
-            req.getSession().invalidate();
-           System.out.println( "[+] Logging out : " + req.getUserPrincipal().getName()); 
-           res.sendRedirect("/sample/index.html");
+
+          req.getSession().invalidate();
+          req.getSession().removeAttribute("JSESSSIONID");
+
+        // Cookie[] cookies = req.getCookies();
+        // if(cookies!=null)
+        // {
+        //   for(Cookie cookie:cookies){
+        //     System.out.println(cookie.getName());
+        //     if(cookie.getName().equals("JSESSIONID")){
+        //       cookie.setValue("");
+        //     }
+        //     System.out.println("cookie expired" + cookie.getValue());
+        // }
+        // } 
+         res.sendRedirect("/sample/index.html");
        } catch (Exception e) {
         System.out.println("Error in Logging out");
         e.printStackTrace();

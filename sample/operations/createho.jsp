@@ -4,7 +4,7 @@
 </head>
 <body>
 <h2> Welcome to hospital creation portal.....</h2>
-<form action = "/doctor/create"method= "POST">
+<form action = "/sample/create"method= "POST">
 <input type="hidden" name = "tname" value = "hospitals" />
 <label>Enter the name : </label>
 <input type="text" name="name"/><br/>

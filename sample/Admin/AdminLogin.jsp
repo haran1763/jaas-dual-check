@@ -17,6 +17,10 @@
 
 <script>
 	document.getElementById("demo").value = window.location.pathname;
+	// const reloadOnce =()=>{
+    //     window.location.hash = "reload";
+    // }
+    // window.onload = reloadOnce();
 </script>
 </body>
 </html>

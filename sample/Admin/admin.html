@@ -2,7 +2,7 @@
 <head>
 <link rel="stylesheet" href="index.css">
 </head>
-<body>
+<body >
 <header>
 <h1>Medicare System....</h1>
 <nav>
@@ -11,7 +11,7 @@
 <input type="submit" id="button" value="Display Hospitals" />
 </form>
 
-<form action="./operations/display.jsp">
+<form action="/sample/operations/display.jsp">
 <input type="hidden" name="tname" value="doctors" />
 <input type="submit" id="button" value="Display doctors" />
 </form>
@@ -24,19 +24,19 @@
 <input type="submit" id="button" value="Create hospitals" />
 </form>
 
-<form action="./operations/updateho.jsp">
+<form action="/sample/operations/updateho.jsp">
 <input type="submit" id="button" value="Update hospitals" />
 </form>
 
-<form action="./operations/update.jsp">
+<form action="/sample/operations/update.jsp">
 <input type="submit" id="button" value="Update doctors" />
 </form>
 
-<form action="./operations/deleteho.jsp">
+<form action="/sample/operations/deleteho.jsp">
 <input type="submit" id="button" value="Delete hospitals" />
 </form>
 
-<form action="./operations/delete.jsp">
+<form action="/sample/operations/delete.jsp">
 <input type="submit" id="button" value="Delete doctors" />
 </form>
 
@@ -44,14 +44,7 @@
 </header>
 
 
-<script>
-	document.getElementById('button').addEventListener('click',display);
-	function display(){
-		var xhr = new XMLHttpRequest();
-		xhr.open()
-	}
 
-</script>
 
 <div>
 	<h2>Welcome Admin....Feel Free To Work With Your App.....</h2>
@@ -59,7 +52,22 @@
 		<input type="submit" name="logout" value="Logout" />
 	</form>
 </div>
+<script>
 
+
+	(()=>{
+		if(window.localStorage){
+			if(!localStorage.getItem('reload')){
+				localStorage['reload'] = true
+				window.location.reload();
+			}
+			else{
+				localStorage.removeItem('reload');
+			}
+		}
+	})();
+	
+</script> 
 
 
 </body>

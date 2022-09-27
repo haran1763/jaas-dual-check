@@ -55,7 +55,7 @@ while(rs.next()){
 
 
 %>
-<form action="/doctor/index.html">
+<form action="/sample/index.html">
 <input type="submit" value="Return Home" />
 </form>
 

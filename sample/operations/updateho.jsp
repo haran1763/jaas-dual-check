@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<form action = "/doctor/update" method = "post">
+<form action = "/sample/update" method = "post">
 <input type="hidden" name ="tname" value = "hospitals" />
 <label>Enter the name : </label>
 <input type="text" name="name" /><br/>
